@@ -712,6 +712,11 @@ type RoleMember struct {
 	Expiration *rdl.Timestamp `json:"expiration,omitempty" rdl:"optional"`
 
 	//
+	// the review reminder timestamp
+	//
+	ReviewReminder *rdl.Timestamp `json:"reviewReminder,omitempty" rdl:"optional"`
+
+	//
 	// Flag to indicate whether membership is active
 	//
 	Active *bool `json:"active,omitempty" rdl:"optional"`
@@ -1152,6 +1157,11 @@ type Membership struct {
 	Expiration *rdl.Timestamp `json:"expiration,omitempty" rdl:"optional"`
 
 	//
+	// the review reminder timestamp
+	//
+	ReviewReminder *rdl.Timestamp `json:"reviewReminder,omitempty" rdl:"optional"`
+
+	//
 	// Flag to indicate whether membership is active
 	//
 	Active *bool `json:"active,omitempty" rdl:"optional"`
@@ -1339,6 +1349,11 @@ type MemberRole struct {
 	// the expiration timestamp
 	//
 	Expiration *rdl.Timestamp `json:"expiration,omitempty" rdl:"optional"`
+
+	//
+	// the review reminder timestamp
+	//
+	ReviewReminder *rdl.Timestamp `json:"reviewReminder,omitempty" rdl:"optional"`
 
 	//
 	// Flag to indicate whether membership is active
