@@ -152,7 +152,7 @@ as input and returns key value that is your configured password.
 ---------------
 
 Generate a unique private key that ZMS Server will use
-to sign any NTokens it issues. From the `athenz-zms-X.Y` directory
+to sign any certificates it issues. From the `athenz-zms-X.Y` directory
 execute the following commands:
 
 ```shell

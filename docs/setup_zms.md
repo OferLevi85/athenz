@@ -52,7 +52,7 @@ $ bin/setup_dev_zms.sh
 
 Running this setup script completes the following two tasks:
 
-* Generate a unique private key that ZMS Server will use to sign any NTokens it issues
+* Generate a unique private key that ZMS Server will use to sign any X509 certificates it issues
 * Generate a self-signed X509 certificate for ZMS Server HTTPS support
 
 ### User Authentication
