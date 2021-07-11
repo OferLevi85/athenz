@@ -17,3 +17,8 @@ type RoleCertificateRequest Struct {
     Timestamp prevCertNotBefore (optional); //previous role certificate not before date
     Timestamp prevCertNotAfter (optional); //previous role certificate not after date
 }
+
+//The representation for an enumeration of roles
+type RoleList Struct {
+    Array<EntityName> names; //list of role names
+}

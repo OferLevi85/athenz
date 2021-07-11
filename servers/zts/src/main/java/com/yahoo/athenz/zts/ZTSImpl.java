@@ -2330,6 +2330,30 @@ public class ZTSImpl implements KeyStore, ZTSHandler {
     }
 
     @Override
+    public RoleList getRolesRequireRoleCert(ResourceContext ctx, String service) {
+        final String caller = ctx.getApiName();
+
+        final String principalDomain = logPrincipalAndGetDomain(ctx);
+        validateRequest(ctx.request(), principalDomain, caller);
+        validate(service, TYPE_ENTITY_NAME, principalDomain, caller);
+
+        // for consistent handling of all requests, we're going to convert
+        // all incoming object values into lower case since ZMS Server
+        // saves all of its object names in lower case
+
+        service = service.toLowerCase();
+
+        List<String> rolesRequireRoleCert = dataStore.getRolesRequireRoleCert(service);
+        if (rolesRequireRoleCert == null) {
+            rolesRequireRoleCert = new ArrayList<>();
+        }
+
+        RoleList roleList = new RoleList();
+        roleList.setNames(rolesRequireRoleCert);
+        return roleList;
+    }
+
+    @Override
     public Workloads getWorkloadsByService(ResourceContext ctx, String domainName, String serviceName) {
 
         final String caller = ctx.getApiName();

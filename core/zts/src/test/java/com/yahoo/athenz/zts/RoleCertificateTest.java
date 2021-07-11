@@ -16,10 +16,14 @@
 
 package com.yahoo.athenz.zts;
 
+import com.yahoo.rdl.Schema;
+import com.yahoo.rdl.Validator;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.testng.Assert.*;
 
 public class RoleCertificateTest {
 
@@ -45,5 +49,49 @@ public class RoleCertificateTest {
 
         assertNotEquals(data1, null);
         assertNotEquals("data", data2);
+    }
+
+    @Test
+    public void testRoleCertificateRoleList() {
+        Schema schema = ZTSSchema.instance();
+        Validator validator = new Validator(schema);
+
+        List<String> roles1 = new ArrayList<>();
+        roles1.add("role1");
+        roles1.add("role2");
+        RoleList roleList1 = new RoleList();
+        roleList1.setNames(roles1);
+
+        Validator.Result result = validator.validate(roleList1, "RoleList");
+        assertTrue(result.valid);
+
+        List<String> roles2 = new ArrayList<>();
+        roles2.add("role1");
+        roles2.add("role2");
+        RoleList roleList2 = new RoleList();
+        roleList2.setNames(roles2);
+        assertTrue(roleList1.equals(roleList1));
+        assertTrue(roleList1.equals(roleList2));
+
+        assertTrue(roleList1.getNames().equals(roleList2.getNames()));
+
+        roles1.remove("role1");
+        assertFalse(roleList1.equals(roleList2));
+
+        roles2.remove("role1");
+        assertTrue(roleList1.equals(roleList2));
+
+        roleList1.setNames(new ArrayList<>());
+        assertFalse(roleList1.equals(roleList2));
+        roleList2.setNames(new ArrayList<>());
+        assertTrue(roleList1.equals(roleList2));
+
+        roleList1.setNames(null);
+        assertFalse(roleList1.equals(roleList2));
+        roleList2.setNames(null);
+        assertTrue(roleList1.equals(roleList2));
+
+        assertFalse(roleList1.equals(null));
+        assertFalse(roleList1.equals(new Object()));
     }
 }

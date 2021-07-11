@@ -156,6 +156,10 @@ public class ZTSSchema {
             .field("prevCertNotBefore", "Timestamp", true, "previous role certificate not before date")
             .field("prevCertNotAfter", "Timestamp", true, "previous role certificate not after date");
 
+        sb.structType("RoleList")
+            .comment("The representation for an enumeration of roles")
+            .arrayField("names", "EntityName", false, "list of role names");
+
         sb.structType("RoleToken")
             .comment("A representation of a signed RoleToken")
             .field("token", "String", false, "")
@@ -722,6 +726,23 @@ public class ZTSSchema {
             .exception("FORBIDDEN", "ResourceError", "")
 
             .exception("NOT_FOUND", "ResourceError", "")
+
+            .exception("UNAUTHORIZED", "ResourceError", "")
+;
+
+        sb.resource("RoleList", "GET", "/rolecert")
+            .comment("Fetch all roles that are tagged as requiring role certificates for service")
+            .name("getRolesRequireRoleCert")
+            .queryParam("service", "service", "ResourceName", null, "")
+            .auth("", "", true)
+            .expected("OK")
+            .exception("BAD_REQUEST", "ResourceError", "")
+
+            .exception("FORBIDDEN", "ResourceError", "")
+
+            .exception("NOT_FOUND", "ResourceError", "")
+
+            .exception("TOO_MANY_REQUESTS", "ResourceError", "")
 
             .exception("UNAUTHORIZED", "ResourceError", "")
 ;

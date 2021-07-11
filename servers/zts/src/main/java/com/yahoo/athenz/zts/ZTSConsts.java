@@ -230,4 +230,6 @@ public final class ZTSConsts {
     public static final String ZTS_JSON_PARSER_ERROR_RESPONSE = "{\"code\":400,\"message\":\"Invalid Object: checkout https://github.com/AthenZ/athenz/tree/master/core/zts/src/main/rdl for object defintions\"}";
 
     public static final String ZTS_PROP_STATUS_CHECKER_FACTORY_CLASS = "athenz.zts.status_checker_factory_class";
+
+    public static final String ZTS_ISSUE_ROLE_CERT_TAG = "zts.IssueRoleCerts";
 }

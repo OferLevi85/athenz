@@ -35,12 +35,14 @@ import java.security.PublicKey;
 import java.util.*;
 
 import com.yahoo.athenz.auth.Principal;
+import com.yahoo.athenz.auth.util.StringUtils;
 import com.yahoo.athenz.common.metrics.Metric;
 import com.yahoo.athenz.common.server.store.ChangeLogStore;
 import com.yahoo.athenz.zms.*;
 import com.yahoo.athenz.zts.ResourceException;
 import com.yahoo.athenz.zts.ZTSTestUtils;
 import com.yahoo.rdl.Timestamp;
+import io.netty.util.internal.StringUtil;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.mockito.Mockito;
 import org.testng.annotations.AfterMethod;
@@ -4023,6 +4025,132 @@ public class DataStoreTest {
 
         fetchedRoles = store.getRolesByDomain("unknownDomain");
         assertEquals(fetchedRoles.size(), 0);
+    }
+
+    private Role generateRoleForTest(String roleName, String tagKey, String tagValue, String memberName, int otherMembersNum) {
+        Role role = new Role();
+        role.setName(roleName);
+        if (!StringUtil.isNullOrEmpty(tagKey)) {
+            Map<String, TagValueList> tags = new HashMap<>();
+            TagValueList tagValueList = new TagValueList();
+            tagValueList.setList(Collections.singletonList(tagValue));
+            tags.put(tagKey, tagValueList);
+            role.setTags(tags);
+        }
+
+        List<RoleMember> members = new ArrayList<>();
+        if (!StringUtil.isNullOrEmpty(memberName)) {
+            members.add(new RoleMember().setMemberName(memberName));
+        }
+
+        for (int i = 0; i < otherMembersNum; ++i) {
+            members.add(new RoleMember().setMemberName("user_domain.user" + i));
+        }
+        role.setRoleMembers(members);
+        return role;
+    }
+
+    @Test
+    public void testGetRolesRequireRoleCert() {
+        ChangeLogStore clogStore = new MockZMSFileChangeLogStore("/tmp/zts_server_unit_tests/zts_root",
+                pkey, "0");
+        DataStore store = new DataStore(clogStore, null, ztsMetric);
+
+        // For the test we'll return roles for the service coretech.api
+        // We'll store the following domains:
+        // domain1 - no roles where coretech.api is a member
+        // domain2 - roles where coretech.api is a member but no roles with the tag "zts.IssueRoleCerts" set to true
+        // domain3 - roles where coretech.api is a member and some of them with the tag "zts.IssueRoleCerts" set to true
+        // domain4 - roles where coretech.api is a member and some of them with the tag "zts.IssueRoleCerts" set to true
+        // We expect to receive roles from domain3 and domain4 where coretech.api is a member
+
+        // Store domain1
+        List<Role> roles = new ArrayList<>();
+
+        Role role = generateRoleForTest("domain1:role.admin", null, null, null, 2);
+        roles.add(role);
+        role = generateRoleForTest("domain1:role.readers", null, null, null, 2);
+        roles.add(role);
+
+        DomainData domainData = new DomainData();
+        domainData.setName("domain1");
+        domainData.setRoles(roles);
+
+        DataCache dataCache = new DataCache();
+        dataCache.setDomainData(domainData);
+        store.processDomainRoles(domainData, dataCache);
+
+        // Store domain2
+        roles = new ArrayList<>();
+
+        role = generateRoleForTest("domain2:role.admin", null, null, "coretech.api", 2);
+        roles.add(role);
+
+        // Role will have a different tag than the one we expect
+        role = generateRoleForTest("domain2:role.readers", "zts.SomOtherTag", "true", "coretech.api", 2);
+        roles.add(role);
+
+        // Role will have the tag we expect but set to false
+        role = generateRoleForTest("domain2:role.writers", "zts.IssueRoleCerts", "false", "coretech.api", 2);
+        roles.add(role);
+
+        domainData = new DomainData();
+        domainData.setName("domain2");
+        domainData.setRoles(roles);
+
+        dataCache = new DataCache();
+        dataCache.setDomainData(domainData);
+        store.processDomainRoles(domainData, dataCache);
+
+        // Store domain3
+        roles = new ArrayList<>();
+
+        // Should return this role
+        role = generateRoleForTest("domain3:role.admin", "zts.IssueRoleCerts", "true", "coretech.api", 2);
+        roles.add(role);
+
+        // Shouldn't return - not a member
+        role = generateRoleForTest("domain3:role.readers", "zts.IssueRoleCerts", "true", null, 2);
+        roles.add(role);
+
+        domainData = new DomainData();
+        domainData.setName("domain3");
+        domainData.setRoles(roles);
+
+        dataCache = new DataCache();
+        dataCache.setDomainData(domainData);
+        store.processDomainRoles(domainData, dataCache);
+
+        // Store domain4
+        roles = new ArrayList<>();
+
+        // Shouldn't return - tag set to false
+        role = generateRoleForTest("domain4:role.admin", "zts.IssueRoleCerts", "false", "coretech.api", 2);
+        roles.add(role);
+
+        // Should return this role
+        role = generateRoleForTest("domain4:role.writers", "zts.IssueRoleCerts", "true", "coretech.api", 2);
+        roles.add(role);
+
+        domainData = new DomainData();
+        domainData.setName("domain4");
+        domainData.setRoles(roles);
+
+        dataCache = new DataCache();
+        dataCache.setDomainData(domainData);
+        store.processDomainRoles(domainData, dataCache);
+
+
+        List<String> rolesRequireRoleCert = store.getRolesRequireRoleCert("coretech.api");
+        assertEquals(rolesRequireRoleCert.size(), 2);
+        assertEquals(rolesRequireRoleCert.get(0), "domain4:role.writers");
+        assertEquals(rolesRequireRoleCert.get(1), "domain3:role.admin");
+
+        // Now delete domain3 and verify we don't return it
+        store.deleteDomain("domain3");
+        rolesRequireRoleCert = store.getRolesRequireRoleCert("coretech.api");
+        assertEquals(rolesRequireRoleCert.size(), 1);
+        assertEquals(rolesRequireRoleCert.get(0), "domain4:role.writers");
     }
 
     @Test

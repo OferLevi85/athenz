@@ -2279,6 +2279,22 @@ public class ZTSClient implements Closeable {
     }
 
     /**
+     * Fetch all roles that are tagged as requiring role certificates for service
+     * @param service
+     * @return list of roles that are tagged as requiring role certificates for the service
+     */
+    public RoleList getRolesRequireRoleCert(String service) {
+        updateServicePrincipal();
+        try {
+            return ztsClient.getRolesRequireRoleCert(service);
+        } catch (ResourceException ex) {
+            throw new ZTSClientException(ex.getCode(), ex.getData());
+        } catch (Exception ex) {
+            throw new ZTSClientException(ResourceException.BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    /**
      * For a given provider domain get a list of tenant domain names that the user is a member of
      * @param providerDomainName name of the provider domain
      * @param userName is the name of the user to search for in the tenant domains of the provider

@@ -1211,6 +1211,66 @@ func (self *RoleCertificateRequest) Validate() error {
 }
 
 //
+// RoleList - The representation for an enumeration of roles
+//
+type RoleList struct {
+
+	//
+	// list of role names
+	//
+	Names []EntityName `json:"names"`
+}
+
+//
+// NewRoleList - creates an initialized RoleList instance, returns a pointer to it
+//
+func NewRoleList(init ...*RoleList) *RoleList {
+	var o *RoleList
+	if len(init) == 1 {
+		o = init[0]
+	} else {
+		o = new(RoleList)
+	}
+	return o.Init()
+}
+
+//
+// Init - sets up the instance according to its default field values, if any
+//
+func (self *RoleList) Init() *RoleList {
+	if self.Names == nil {
+		self.Names = make([]EntityName, 0)
+	}
+	return self
+}
+
+type rawRoleList RoleList
+
+//
+// UnmarshalJSON is defined for proper JSON decoding of a RoleList
+//
+func (self *RoleList) UnmarshalJSON(b []byte) error {
+	var m rawRoleList
+	err := json.Unmarshal(b, &m)
+	if err == nil {
+		o := RoleList(m)
+		*self = *((&o).Init())
+		err = self.Validate()
+	}
+	return err
+}
+
+//
+// Validate - checks for missing required fields, etc
+//
+func (self *RoleList) Validate() error {
+	if self.Names == nil {
+		return fmt.Errorf("RoleList: Missing required field: names")
+	}
+	return nil
+}
+
+//
 // RoleToken - A representation of a signed RoleToken
 //
 type RoleToken struct {

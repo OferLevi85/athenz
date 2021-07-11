@@ -238,6 +238,20 @@ public class ZTSRDLClientMock extends ZTSRDLGeneratedClient implements java.io.C
 
         return new ServiceIdentityList().setNames(Collections.singletonList("storage"));
     }
+
+    @Override
+    public RoleList getRolesRequireRoleCert(String service) {
+        if (service.equals("unknown.service")) {
+            throw new ResourceException(404, "Service not found");
+        } else if (service.equals("error.service")) {
+            throw new RuntimeException("Unknown exception");
+        }
+        List<String> roles = new ArrayList<>();
+        roles.add("role1");
+        RoleList roleList = new RoleList();
+        roleList.setNames(roles);
+        return roleList;
+    }
     
     public void setAwsCreds(Timestamp expiration, String domainName, String roleName) {
         String key = domainName + ":" + roleName;

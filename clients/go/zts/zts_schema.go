@@ -183,6 +183,11 @@ func init() {
 	tRoleCertificateRequest.Field("prevCertNotAfter", "Timestamp", true, nil, "previous role certificate not after date")
 	sb.AddType(tRoleCertificateRequest.Build())
 
+	tRoleList := rdl.NewStructTypeBuilder("Struct", "RoleList")
+	tRoleList.Comment("The representation for an enumeration of roles")
+	tRoleList.ArrayField("names", "EntityName", false, "list of role names")
+	sb.AddType(tRoleList.Build())
+
 	tRoleToken := rdl.NewStructTypeBuilder("Struct", "RoleToken")
 	tRoleToken.Comment("A representation of a signed RoleToken")
 	tRoleToken.Field("token", "String", false, nil, "")
@@ -701,6 +706,18 @@ func init() {
 	mPostRoleCertificateRequestExt.Exception("NOT_FOUND", "ResourceError", "")
 	mPostRoleCertificateRequestExt.Exception("UNAUTHORIZED", "ResourceError", "")
 	sb.AddResource(mPostRoleCertificateRequestExt.Build())
+
+	mGetRolesRequireRoleCert := rdl.NewResourceBuilder("RoleList", "GET", "/rolecert")
+	mGetRolesRequireRoleCert.Comment("Fetch all roles that are tagged as requiring role certificates for service")
+	mGetRolesRequireRoleCert.Name("getRolesRequireRoleCert")
+	mGetRolesRequireRoleCert.Input("service", "ResourceName", false, "service", "", false, nil, "")
+	mGetRolesRequireRoleCert.Auth("", "", true, "")
+	mGetRolesRequireRoleCert.Exception("BAD_REQUEST", "ResourceError", "")
+	mGetRolesRequireRoleCert.Exception("FORBIDDEN", "ResourceError", "")
+	mGetRolesRequireRoleCert.Exception("NOT_FOUND", "ResourceError", "")
+	mGetRolesRequireRoleCert.Exception("TOO_MANY_REQUESTS", "ResourceError", "")
+	mGetRolesRequireRoleCert.Exception("UNAUTHORIZED", "ResourceError", "")
+	sb.AddResource(mGetRolesRequireRoleCert.Build())
 
 	mGetWorkloadsByService := rdl.NewResourceBuilder("Workloads", "GET", "/domain/{domainName}/service/{serviceName}/workloads")
 	mGetWorkloadsByService.Name("getWorkloadsByService")
